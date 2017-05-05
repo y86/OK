@@ -139,6 +139,26 @@ defmodule OK do
   end
 
   @doc """
+  Macro which converts a truthy result to {:ok, result} and a falsy result
+  to {:error, :not_found}
+    request
+    ~>> name_not_blank
+    ~>> (found name_trim)
+  """
+  defmacro found(args, func) do
+    quote do
+      (fn ->
+        result = unquote(args) |> unquote(func)
+        if result do
+          {:ok, result}
+        else
+          {:error, :not_found}
+        end
+      end).()
+    end
+  end
+
+  @doc """
   Macro which always changes the output from functions that do not return
   {:ok/:error, } tagged tuples to a success two-track function output.
   Usage along side ~>> operator can be as follows:

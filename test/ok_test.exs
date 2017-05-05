@@ -1,6 +1,6 @@
 defmodule OKTest do
   use ExUnit.Case
-  import OK, only: [~>>: 2, success: 1, failure: 1, map: 2, tee: 2, try_catch: 2]
+  import OK, only: [~>>: 2, success: 1, failure: 1, map: 2, tee: 2, try_catch: 2, found: 2]
   doctest OK
 
   test "try a chain of operations" do
@@ -178,6 +178,28 @@ defmodule OKTest do
     assert_raise FunctionClauseError, fn ->
       OK.bind({:ok, :test_value}, :no_func)
     end
+  end
+
+  test "bind with found function" do
+    two_track_sum = fn(a, b) -> {:ok, a + b} end
+    search_with_nil_result = fn(_x) -> nil end
+    search_with_result = fn(x) -> x end
+
+    result =
+      two_track_sum.(20, 40)
+      ~>> two_track_sum.(40)
+      ~>> (found search_with_nil_result.())
+      ~>> two_track_sum.(40)
+
+    assert result == {:error, :not_found}
+
+    result =
+      two_track_sum.(20, 40)
+      ~>> two_track_sum.(40)
+      ~>> (found search_with_result.())
+      ~>> two_track_sum.(40)
+
+    assert result == {:ok, 140}
   end
 
   test "bind with one_track function" do
