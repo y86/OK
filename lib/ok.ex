@@ -217,13 +217,13 @@ defmodule OK do
   @doc """
   Composes multiple functions similar to Elixir's native `with` construct.
 
-  `OK.with/1` enables more terse and readable expressions however, eliminating
-  noise and regaining precious horizontal real estate. This makes `OK.with`
+  `OK.ok_with/1` enables more terse and readable expressions however, eliminating
+  noise and regaining precious horizontal real estate. This makes `OK.ok_with`
   statements simpler, more readable, and ultimately more maintainable.
 
   It does this by extracting result tuples when using the `<-` operator.
 
-      iex> OK.with do
+      iex> OK.ok_with do
       ...>   a <- safe_div(8, 2)
       ...>   b <- safe_div(a, 2)
       ...>   OK.success b
@@ -237,7 +237,7 @@ defmodule OK do
 
   We could have also written this with a raw `:ok` tuple:
 
-      iex> OK.with do
+      iex> OK.ok_with do
       ...>   a <- safe_div(8, 2)
       ...>   b <- safe_div(a, 2)
       ...>   {:ok, b}
@@ -246,7 +246,7 @@ defmodule OK do
 
   Or even this:
 
-      iex> OK.with do
+      iex> OK.ok_with do
       ...>   a <- safe_div(8, 2)
       ...>   _ <- safe_div(a, 2)
       ...> end
@@ -254,7 +254,7 @@ defmodule OK do
 
   In addition to this, regular matching using the `=` operator is also available:
 
-      iex> OK.with do
+      iex> OK.ok_with do
       ...>   a <- safe_div(8, 2)
       ...>   b = 2.0
       ...>   OK.success a + b
@@ -263,16 +263,16 @@ defmodule OK do
 
   Error tuples are returned from the expression:
 
-      iex> OK.with do
+      iex> OK.ok_with do
       ...>   a <- safe_div(8, 2)
       ...>   b <- safe_div(a, 0) # error here
       ...>   {:ok, a + b}        # does not execute this line
       ...> end
       {:error, :zero_division}
 
-  `OK.with` also provides `else` blocks where you can pattern match on the _extracted_ error values, which is useful for wrapping or correcting errors:
+  `OK.ok_with` also provides `else` blocks where you can pattern match on the _extracted_ error values, which is useful for wrapping or correcting errors:
 
-      iex> OK.with do
+      iex> OK.ok_with do
       ...>   a <- safe_div(8, 2)
       ...>   b <- safe_div(a, 0) # returns {:error, :zero_division}
       ...>   {:ok, a + b}
@@ -281,12 +281,12 @@ defmodule OK do
       ...> end
       {:error, "You cannot divide by 0."}
 
-  ## Combining OK.with and ~>>
+  ## Combining OK.ok_with and ~>>
 
   Because the OK.pipe operator (`~>>`) also uses result monads, you can now pipe
-  _safely_ within an `OK.with` block:
+  _safely_ within an `OK.ok_with` block:
 
-      iex> OK.with do
+      iex> OK.ok_with do
       ...>   a <- {:ok, 100}
       ...>        ~>> safe_div(10)
       ...>        ~>> safe_div(5)
@@ -296,7 +296,7 @@ defmodule OK do
       ...> end
       {:ok, 6.0}
 
-      iex> OK.with do
+      iex> OK.ok_with do
       ...>   a <- {:ok, 100}
       ...>        ~>> safe_div(10)
       ...>        ~>> safe_div(0)   # error here
@@ -309,18 +309,18 @@ defmodule OK do
   ## Remarks
 
   Notice that in all of these examples, we know this is a happy path operation
-  because we are inside of the `OK.with` block. But it is much more elegant,
+  because we are inside of the `OK.ok_with` block. But it is much more elegant,
   readable and DRY, as it eliminates large numbers of superfluous `:ok` tags
   that would normally be found in native `with` blocks.
 
-  Also, `OK.with` does not have trailing commas on each line. This avoids
+  Also, `OK.ok_with` does not have trailing commas on each line. This avoids
   compilation errors when you accidentally forget to add/remove a comma when
   coding.
 
   Be sure to check out [`ok_test.exs` tests](https://github.com/CrowdHailer/OK/blob/master/test/ok_test.exs)
   for more examples.
   """
-  defmacro with(do: {:__block__, _env, lines}) do
+  defmacro ok_with(do: {:__block__, _env, lines}) do
     return = bind_match(lines)
     quote do
       case unquote(return) do
@@ -329,7 +329,7 @@ defmodule OK do
       end
     end
   end
-  defmacro with(do: {:__block__, _, normal}, else: exceptional) do
+  defmacro ok_with(do: {:__block__, _, normal}, else: exceptional) do
     exceptional_clauses = exceptional ++ (quote do
       reason ->
         {:error, reason}
@@ -354,10 +354,10 @@ defmodule OK do
   require Logger
 
   @doc """
-  DEPRECATED: `OK.try` has been replaced with `OK.with`
+  DEPRECATED: `OK.try` has been replaced with `OK.ok_with`
   """
   defmacro try(do: {:__block__, _env, lines}) do
-    Logger.warn("DEPRECATED: `OK.try` has been replaced with `OK.with`")
+    Logger.warn("DEPRECATED: `OK.try` has been replaced with `OK.ok_with`")
     bind_match(lines)
   end
 

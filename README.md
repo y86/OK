@@ -15,9 +15,9 @@ The OK module works with result tuples by treating them as a result monad.
 
 See [Handling Errors in Elixir](http://insights.workshop14.io/2015/10/18/handling-errors-in-elixir-no-one-say-monad.html) for a more detailed explanation.
 
-## OK.with
+## OK.ok_with
 
-`OK.with/1` allows for more concise and ultimately more readable code than the native `with` construct. It does this by leveraging result monads for both the happy and non-happy paths. By extracting the actual function return values from the result tuples, `OK.with/1` reduces noise which improves readability and recovers precious horizontal code real estate. This also encourages writing idiomatic Elixir functions which return `:ok`/`:error` tuples.
+`OK.ok_with/1` allows for more concise and ultimately more readable code than the native `with` construct. It does this by leveraging result monads for both the happy and non-happy paths. By extracting the actual function return values from the result tuples, `OK.ok_with/1` reduces noise which improves readability and recovers precious horizontal code real estate. This also encourages writing idiomatic Elixir functions which return `:ok`/`:error` tuples.
 
 - [Elegant error handling with result monads, alternative to elixir `with` special form](https://elixirforum.com/t/elegant-error-handling-with-result-monads-alternative-to-elixir-with-special-form/3264/1)
 - [Discussion on :ok/:error](https://elixirforum.com/t/usage-of-ok-result-error-vs-some-result-none/3253)
@@ -29,12 +29,12 @@ See [Handling Errors in Elixir](http://insights.workshop14.io/2015/10/18/handlin
 - Return result must also be in the form of a tagged tuple.
 - _Optionally_ pattern match on some errors in an `else` block.
 
-_NB: Statements inside `OK.with` blocks are **not** delimited by commas as with the native Elixir `with` construct._
+_NB: Statements inside `OK.ok_with` blocks are **not** delimited by commas as with the native Elixir `with` construct._
 
 ```elixir
 require OK
 
-OK.with do
+OK.ok_with do
   user <- fetch_user(1)        # `<-` operator means func returns {:ok, user}
   cart <- fetch_cart(1)        # `<-` again, {:ok, cart}
   order = checkout(cart, user) # `=` allows pattern matching on non-tagged funcs
@@ -64,7 +64,7 @@ You can pattern match on errors as well in an `else` block:
 ```elixir
 require OK
 
-OK.with do
+OK.ok_with do
   user <- fetch_user(1)
   cart <- fetch_cart(1)
   order = checkout(cart, user)
@@ -84,7 +84,7 @@ You can also use `OK.success` and `OK.failure` macros:
 ```elixir
 require OK
 
-OK.with do
+OK.ok_with do
   user <- fetch_user(1)
   cart <- fetch_cart(1)
   order = checkout(cart, user)

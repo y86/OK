@@ -25,7 +25,7 @@ defmodule OK.ErrorTest do
           bar(a) :: {:bad, 6}
     """
     assert_raise OK.BindError, message, fn() ->
-      OK.with do
+      OK.ok_with do
         a <- foo(6)
         b <- bar(a)
         OK.success(b)
@@ -47,7 +47,7 @@ defmodule OK.ErrorTest do
           foo(6) :: {:ok, 6}
     """
     assert_raise OK.BindError, message, fn() ->
-      OK.with do
+      OK.ok_with do
         %{a: a} <- foo(6)
         b <- foo(a)
         OK.success(b)

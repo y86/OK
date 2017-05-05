@@ -4,7 +4,7 @@ defmodule OKTest do
   doctest OK
 
   test "try a chain of operations" do
-    result = OK.with do
+    result = OK.ok_with do
       a <- safe_div(8, 2)
       _ <- safe_div(a, 2)
     end
@@ -12,7 +12,7 @@ defmodule OKTest do
   end
 
   test "modify an error" do
-    result = OK.with do
+    result = OK.ok_with do
       a <- safe_div(8, 2)
       _ <- safe_div(a, 0)
     else
@@ -25,7 +25,7 @@ defmodule OKTest do
   end
 
   test "pass through an error with else block present" do
-    result = OK.with do
+    result = OK.ok_with do
       a <- safe_div(8, 2)
       _ <- safe_div(a, 0)
     else
@@ -36,7 +36,7 @@ defmodule OKTest do
   end
 
   test "try last operation failure" do
-    result = OK.with do
+    result = OK.ok_with do
       a <- safe_div(8, 2)
       _ <- safe_div(a, 0)
     end
@@ -44,7 +44,7 @@ defmodule OKTest do
   end
 
   test "try first operation failure" do
-    result = OK.with do
+    result = OK.ok_with do
       a <- safe_div(8, 0)
       _ <- safe_div(a, 2)
     end
@@ -52,7 +52,7 @@ defmodule OKTest do
   end
 
   test "try normal code within block" do
-    result = OK.with do
+    result = OK.ok_with do
       a <- safe_div(6, 2)
       b = a + 1
       safe_div(b, 2)
@@ -61,7 +61,7 @@ defmodule OKTest do
   end
 
   test "primitives as final operation - ok literal" do
-    result = OK.with do
+    result = OK.ok_with do
       a <- safe_div(8, 2)
       b <- safe_div(a, 2)
       {:ok, b}
@@ -70,7 +70,7 @@ defmodule OKTest do
   end
 
   test "primitives as final operation - ok literal func" do
-    result = OK.with do
+    result = OK.ok_with do
       a <- safe_div(8, 2)
       b <- safe_div(a, 2)
       {:ok, a + b}
@@ -79,7 +79,7 @@ defmodule OKTest do
   end
 
   test "primitives as final operation - OK.success literal" do
-    result = OK.with do
+    result = OK.ok_with do
       a <- safe_div(8, 2)
       b <- safe_div(a, 2)
       # {:ok, a + b}
@@ -90,7 +90,7 @@ defmodule OKTest do
   end
 
   test "primitives as final operation - OK.success func" do
-    result = OK.with do
+    result = OK.ok_with do
       a <- safe_div(8, 2)
       b <- safe_div(a, 2)
       OK.success a + b
@@ -99,7 +99,7 @@ defmodule OKTest do
   end
 
   test "function as final operation - pass" do
-    result = OK.with do
+    result = OK.ok_with do
       a <- safe_div(8, 2)
       b <- safe_div(a, 2)
       pass_func(b)
@@ -108,7 +108,7 @@ defmodule OKTest do
   end
 
   test "function as final operation - fail" do
-    result = OK.with do
+    result = OK.ok_with do
       a <- safe_div(8, 2)
       b <- safe_div(a, 2)
       fail_func(b)
@@ -118,7 +118,7 @@ defmodule OKTest do
 
   test "will fail to match if the return value is not a result" do
     assert_raise CaseClauseError, fn() ->
-      OK.with do
+      OK.ok_with do
         a <- safe_div(8, 2)
         (fn() -> {:x, a} end).()
       end
@@ -127,7 +127,7 @@ defmodule OKTest do
 
   test "will fail to match if the return value of exceptional block is not a result" do
     assert_raise CaseClauseError, fn() ->
-      OK.with do
+      OK.ok_with do
         a <- safe_div(8, 2)
         _ <- safe_div(a, 0)
       else
