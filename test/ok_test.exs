@@ -1,6 +1,6 @@
 defmodule OKTest do
   use ExUnit.Case
-  import OK, only: [~>>: 2, success: 1, failure: 1]
+  import OK, only: [~>>: 2, success: 1, failure: 1, map: 2, tee: 2, try_catch: 2]
   doctest OK
 
   test "try a chain of operations" do
@@ -178,6 +178,46 @@ defmodule OKTest do
     assert_raise FunctionClauseError, fn ->
       OK.bind({:ok, :test_value}, :no_func)
     end
+  end
+
+  test "bind with one_track function" do
+    two_track_sum = fn(a, b) -> {:ok, a + b} end
+    one_track_sum = fn(a, b) -> a + b end
+
+    result =
+      20
+      |> two_track_sum.(40)
+      ~>> two_track_sum.(40)
+      ~>> (map one_track_sum.(40))
+    assert result == {:ok, 140}
+  end
+
+  test "bind with dead_end function" do
+    two_track_sum = fn(a, b) -> {:ok, a + b} end
+    dead_end_operation = fn(x) -> IO.puts(x) end
+
+    result =
+      20
+      |> two_track_sum.(40)
+      ~>> two_track_sum.(40)
+      ~>> (tee dead_end_operation.())
+      ~>> two_track_sum.(40)
+
+    assert result == {:ok, 140}
+  end
+
+  test "bind with try_catch function" do
+    two_track_sum = fn(a, b) -> {:ok, a + b} end
+    try_catch_division = fn(a) -> a/0 end
+
+    result =
+      20
+      |> two_track_sum.(40)
+      ~>> two_track_sum.(40)
+      ~>> (try_catch try_catch_division.())
+      ~>> two_track_sum.(40)
+
+    assert elem(result, 0) == :error
   end
 
   # These are all used in doc tests
