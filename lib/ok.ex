@@ -208,7 +208,7 @@ defmodule OK do
         try do
           {:ok, unquote(args) |> unquote(func)}
         rescue
-          e -> {:error, e}
+          e -> {:error, {:try_catch, e}}
         end
       end).()
     end
