@@ -158,6 +158,14 @@ defmodule OK do
     end
   end
 
+  def found(result) do
+    if result do
+      {:ok, result}
+    else
+      {:error, :not_found}
+    end
+  end
+
   @doc """
   Macro which always changes the output from functions that do not return
   {:ok/:error, } tagged tuples to a success two-track function output.
