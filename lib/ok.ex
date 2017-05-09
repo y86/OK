@@ -193,6 +193,33 @@ defmodule OK do
   def tag_error(result, tag, sub_tag), do: tag_error(result, [tag, sub_tag])
 
   @doc """
+  Function that will change the ok output aplying the list of tags from `tag_list`.
+  An input in the form [:tag, :sub_tag] will change {:ok, result} to
+  {:ok, :tag, :sub_tag, result}.
+  request
+
+  Usage
+  ~>> validate
+  ~>> Repo.insert |> tag_ok(:client, :user)
+  """
+  def tag_ok(result, tag_list) when is_list(tag_list) do
+    case result do
+      {:ok, result} -> {:ok, List.to_tuple(tag_list ++ [result])}
+      error -> error
+    end
+  end
+  @doc """
+  Convenient case of tag_ok for 1 tag.
+  """
+  def tag_ok(result, tag), do: tag_ok(result, [tag])
+
+  @doc """
+  Convenient case of tag_ok for 2 tags.
+  """
+  def tag_ok(result, tag, sub_tag), do: tag_ok(result, [tag, sub_tag])
+
+
+  @doc """
   Macro which always changes the output from functions that do not return
   {:ok/:error, } tagged tuples to a success two-track function output.
   Usage along side ~>> operator can be as follows:
