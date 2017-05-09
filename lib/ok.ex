@@ -167,6 +167,32 @@ defmodule OK do
   end
 
   @doc """
+  Function that will change the error output aplying the list of tags from `tag_list`.
+  An input in the form [:tag, :sub_tag] will change {:error, reason} to
+  {:error, :tag, :sub_tag, reason}.
+  request
+
+  Usage
+  ~>> validate
+  ~>> Repo.insert |> tag_error(:changeset, :user)
+  """
+  def tag_error(result, tag_list) when is_list(tag_list) do
+    case result do
+      {:error, reason} -> {:error, List.to_tuple(tag_list ++ [reason])}
+      ok -> ok
+    end
+  end
+  @doc """
+  Convenient case of tag_error for 1 tag.
+  """
+  def tag_error(result, tag), do: tag_error(result, [tag])
+
+  @doc """
+  Convenient case of tag_error for 2 tags.
+  """
+  def tag_error(result, tag, sub_tag), do: tag_error(result, [tag, sub_tag])
+
+  @doc """
   Macro which always changes the output from functions that do not return
   {:ok/:error, } tagged tuples to a success two-track function output.
   Usage along side ~>> operator can be as follows:

@@ -1,6 +1,6 @@
 defmodule OKTest do
   use ExUnit.Case
-  import OK, only: [~>>: 2, success: 1, failure: 1, map: 2, tee: 2, try_catch: 2, found: 2]
+  import OK, only: [~>>: 2, success: 1, failure: 1, map: 2, tee: 2, try_catch: 2, found: 2, tag_error: 2, tag_error: 3]
   doctest OK
 
   test "try a chain of operations" do
@@ -240,6 +240,48 @@ defmodule OKTest do
       ~>> two_track_sum.(40)
 
     assert elem(result, 0) == :error
+  end
+
+  test "1-tag error func test" do
+    two_track_sum = fn(a, b) -> {:ok, a + b} end
+    error_func = fn(a) -> {:error, a} end
+
+    result =
+      20
+      |> two_track_sum.(40)
+      ~>> two_track_sum.(40)
+      ~>> error_func.() |> tag_error(:tag)
+      ~>> two_track_sum.(40)
+
+    assert result == {:error, {:tag, 100}}
+  end
+
+  test "2-tag error func test" do
+    two_track_sum = fn(a, b) -> {:ok, a + b} end
+    error_func = fn(a) -> {:error, a} end
+
+    result =
+      20
+      |> two_track_sum.(40)
+      ~>> two_track_sum.(40)
+      ~>> error_func.() |> tag_error(:tag, :sub_tag)
+      ~>> two_track_sum.(40)
+
+    assert result == {:error, {:tag, :sub_tag, 100}}
+  end
+
+  test "list-tag error func test" do
+    two_track_sum = fn(a, b) -> {:ok, a + b} end
+    error_func = fn(a) -> {:error, a} end
+
+    result =
+      20
+      |> two_track_sum.(40)
+      ~>> two_track_sum.(40)
+      ~>> error_func.() |> tag_error([:tag1, :tag2, :tag3])
+      ~>> two_track_sum.(40)
+
+    assert result == {:error, {:tag1, :tag2, :tag3, 100}}
   end
 
   # These are all used in doc tests
