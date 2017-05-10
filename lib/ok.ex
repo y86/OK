@@ -167,14 +167,51 @@ defmodule OK do
   end
 
   @doc """
+  Macro that will change the error output aplying the list of tags from `tag_list`.
+  An input in the form [:tag, :sub_tag] will change {:error, reason} to
+  {:error, {:tag, :sub_tag, reason}}.
+
+  Usage
+    request
+    ~>> validate
+    ~>> (tag_error Repo.insert, [:changeset, :user])
+  """
+  defmacro tag_error(args, func, tag_list) when is_list(tag_list) do
+  # defmacro error_tag(args, func) do
+    quote do
+      (fn ->
+        result = unquote(args) |> unquote(func)
+        tag_error(result, unquote(tag_list))
+      end).()
+    end
+  end
+  defmacro tag_error(args, func, tag) do
+    quote do
+      (fn ->
+        result = unquote(args) |> unquote(func)
+        tag_error(result, [unquote(tag)])
+      end).()
+    end
+  end
+  defmacro tag_error(args, func, tag, sub_tag) do
+    quote do
+      (fn ->
+        result = unquote(args) |> unquote(func)
+        tag_error(result, [unquote(tag), unquote(sub_tag)])
+      end).()
+    end
+  end
+
+  @doc """
   Function that will change the error output aplying the list of tags from `tag_list`.
   An input in the form [:tag, :sub_tag] will change {:error, reason} to
   {:error, :tag, :sub_tag, reason}.
-  request
 
   Usage
-  ~>> validate
-  ~>> Repo.insert |> tag_error(:changeset, :user)
+    request
+    ~>> validate
+    ~>> Repo.insert
+    |> tag_error(:changeset, :user)
   """
   def tag_error(result, tag_list) when is_list(tag_list) do
     case result do
@@ -182,25 +219,52 @@ defmodule OK do
       ok -> ok
     end
   end
-  @doc """
-  Convenient case of tag_error for 1 tag.
-  """
-  def tag_error(result, tag), do: tag_error(result, [tag])
 
   @doc """
-  Convenient case of tag_error for 2 tags.
+  Macro that will change the error output aplying the list of tags from `tag_list`.
+  An input in the form [:tag, :sub_tag] will change {:error, reason} to
+  {:error, {:tag, :sub_tag, reason}}.
+
+  Usage
+    request
+    ~>> validate
+    ~>> (tag_ok Repo.insert, [:tag01, :tag02])
   """
-  def tag_error(result, tag, sub_tag), do: tag_error(result, [tag, sub_tag])
+  defmacro tag_ok(args, func, tag_list) when is_list(tag_list) do
+    quote do
+      (fn ->
+        result = unquote(args) |> unquote(func)
+        tag_ok(result, unquote(tag_list))
+      end).()
+    end
+  end
+  defmacro tag_ok(args, func, tag) do
+    quote do
+      (fn ->
+        result = unquote(args) |> unquote(func)
+        tag_ok(result, [unquote(tag)])
+      end).()
+    end
+  end
+  defmacro tag_ok(args, func, tag, sub_tag) do
+    quote do
+      (fn ->
+        result = unquote(args) |> unquote(func)
+        tag_ok(result, [unquote(tag), unquote(sub_tag)])
+      end).()
+    end
+  end
 
   @doc """
   Function that will change the ok output aplying the list of tags from `tag_list`.
   An input in the form [:tag, :sub_tag] will change {:ok, result} to
-  {:ok, :tag, :sub_tag, result}.
-  request
+  {:ok, {:tag, :sub_tag, result}}.
 
   Usage
-  ~>> validate
-  ~>> Repo.insert |> tag_ok(:client, :user)
+    request
+    ~>> validate
+    ~>> Repo.insert
+    |>  tag_ok([:tag01, :tag02])
   """
   def tag_ok(result, tag_list) when is_list(tag_list) do
     case result do
@@ -208,15 +272,6 @@ defmodule OK do
       error -> error
     end
   end
-  @doc """
-  Convenient case of tag_ok for 1 tag.
-  """
-  def tag_ok(result, tag), do: tag_ok(result, [tag])
-
-  @doc """
-  Convenient case of tag_ok for 2 tags.
-  """
-  def tag_ok(result, tag, sub_tag), do: tag_ok(result, [tag, sub_tag])
 
 
   @doc """

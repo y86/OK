@@ -1,6 +1,6 @@
 defmodule OKTest do
   use ExUnit.Case
-  import OK, only: [~>>: 2, success: 1, failure: 1, map: 2, tee: 2, try_catch: 2, found: 2, tag_error: 2, tag_error: 3]
+  import OK, only: [~>>: 2, success: 1, failure: 1, map: 2, tee: 2, try_catch: 2, found: 2, tag_error: 2, tag_error: 3, tag_error: 4]
   doctest OK
 
   test "try a chain of operations" do
@@ -242,7 +242,7 @@ defmodule OKTest do
     assert elem(result, 0) == :error
   end
 
-  test "1-tag error func test" do
+  test "1-tag error macro test" do
     two_track_sum = fn(a, b) -> {:ok, a + b} end
     error_func = fn(a) -> {:error, a} end
 
@@ -250,13 +250,13 @@ defmodule OKTest do
       20
       |> two_track_sum.(40)
       ~>> two_track_sum.(40)
-      ~>> error_func.() |> tag_error(:tag)
+      ~>> (tag_error error_func.(), :tag)
       ~>> two_track_sum.(40)
 
     assert result == {:error, {:tag, 100}}
   end
 
-  test "2-tag error func test" do
+  test "2-tag error macro test" do
     two_track_sum = fn(a, b) -> {:ok, a + b} end
     error_func = fn(a) -> {:error, a} end
 
@@ -264,13 +264,13 @@ defmodule OKTest do
       20
       |> two_track_sum.(40)
       ~>> two_track_sum.(40)
-      ~>> error_func.() |> tag_error(:tag, :sub_tag)
+      ~>> (tag_error error_func.(), :tag, :sub_tag)
       ~>> two_track_sum.(40)
 
     assert result == {:error, {:tag, :sub_tag, 100}}
   end
 
-  test "list-tag error func test" do
+  test "list-tag error macro test" do
     two_track_sum = fn(a, b) -> {:ok, a + b} end
     error_func = fn(a) -> {:error, a} end
 
@@ -278,7 +278,7 @@ defmodule OKTest do
       20
       |> two_track_sum.(40)
       ~>> two_track_sum.(40)
-      ~>> error_func.() |> tag_error([:tag1, :tag2, :tag3])
+      ~>> (tag_error error_func.(), [:tag1, :tag2, :tag3])
       ~>> two_track_sum.(40)
 
     assert result == {:error, {:tag1, :tag2, :tag3, 100}}
