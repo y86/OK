@@ -220,6 +220,7 @@ defmodule OK do
     end
   end
 
+
   @doc """
   Macro that will change the error output aplying the list of tags from `tag_list`.
   An input in the form [:tag, :sub_tag] will change {:error, reason} to
@@ -274,6 +275,48 @@ defmodule OK do
   end
 
 
+  @doc """
+  Macro that will change the error output aplying the list of tags from `tag_list`.
+  An input in the form [:tag, :sub_tag] will change {:error, reason} to
+  {:error, {:tag, :sub_tag, reason}}.
+
+  Usage
+    request
+    ~>> validate
+    ~>> (tag_ok Repo.insert, [:tag01, :tag02])
+  """
+  defmacro tag(args, func, tag_list) do
+    quote do
+      (fn ->
+        result = unquote(args) |> unquote(func)
+        tag(result, unquote(tag_list))
+      end).()
+    end
+  end
+
+
+  @doc """
+  Function that will change the ok output aplying the list of tags from `tag_list`.
+  An input in the form [:tag, :sub_tag] will change {:ok, result} to
+  {:ok, {:tag, :sub_tag, result}}.
+
+  Usage
+    request
+    ~>> validate
+    ~>> Repo.insert
+    |>  tag_ok([:tag01, :tag02])
+  """
+  def tag(result, [{:ok, ok_list}, {:error, error_list}]) when is_list(ok_list) and is_list(error_list) do
+    case result do
+      {:ok, result} -> {:ok, List.to_tuple(ok_list ++ [result])}
+      {:error, result} -> {:error, List.to_tuple(error_list ++ [result])}
+    end
+  end
+  def tag(result, [{:ok, ok_tag}, {:error, error_list}]) when is_list(error_list), 
+    do: tag(result, [{:ok, [ok_tag]}, {:error, error_list}])
+  def tag(result, [{:ok, ok_list}, {:error, error_tag}]), 
+    do: tag(result, [{:ok, ok_list}, {:error, [error_tag]}])
+  
   @doc """
   Macro which always changes the output from functions that do not return
   {:ok/:error, } tagged tuples to a success two-track function output.

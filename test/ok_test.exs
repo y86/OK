@@ -1,6 +1,11 @@
 defmodule OKTest do
   use ExUnit.Case
-  import OK, only: [~>>: 2, success: 1, failure: 1, map: 2, tee: 2, try_catch: 2, found: 2, tag_error: 2, tag_error: 3, tag_error: 4]
+  import OK, only: [
+    ~>>: 2, success: 1, failure: 1, 
+    map: 2, tee: 2, try_catch: 2, found: 2, 
+    tag_error: 2, tag_error: 3, tag_error: 4,
+    tag: 2, tag: 3
+  ]
   doctest OK
 
   test "try a chain of operations" do
@@ -282,6 +287,34 @@ defmodule OKTest do
       ~>> two_track_sum.(40)
 
     assert result == {:error, {:tag1, :tag2, :tag3, 100}}
+  end
+
+  test "list-tag macro test" do
+    two_track_sum = 
+      fn
+        ({a, b}, c) -> {:ok, a + b + c} 
+        (a, b) -> {:ok, a + b} 
+      end
+    error_func = fn(a) -> {:error, a} end
+
+    result =
+      20
+      |>  two_track_sum.(40)
+      ~>> two_track_sum.(40)
+      ~>> (tag error_func.(), [ok: 10, error: :tag1])
+      ~>> two_track_sum.(40)
+
+    assert result == {:error, {:tag1, 100}}
+
+    any = %{"whatever" => %{}}
+    result =
+      20
+      |>  two_track_sum.(40)
+      ~>> two_track_sum.(40)
+      ~>> (tag two_track_sum.(40), [ok: 10, error: :tag1])
+      ~>> (tag two_track_sum.(40), [ok: [any, "ok_tag"], error: :not_used])
+
+    assert result == {:ok, {any, "ok_tag", 190}}
   end
 
   # These are all used in doc tests
