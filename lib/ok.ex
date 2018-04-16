@@ -556,6 +556,10 @@ defmodule OK do
 
         result = {:error, _} ->
           result
+        result = {:error, r1, r2} ->
+          {:error, {r1, r2}}
+        result = {:error, r1, r2, r3} ->
+          {:error, {r1, r2, r3}}
         return ->
           raise %BindError{
             return: return,

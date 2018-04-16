@@ -141,6 +141,26 @@ defmodule OKTest do
     assert result == {:error, :failure}
   end
 
+  test "test function with flattened error clause - tuple 3" do
+    three_tuple_error_func = fn () -> {:error, :type, :failure} end
+    result = OK.ok_with do
+      a <- safe_div(8, 2)
+      _ <- three_tuple_error_func.()
+      _ <- safe_div(a, 2)
+    end
+    assert result == {:error, {:type, :failure}}
+  end
+  
+  test "test function with flattened error clause - tuple 4" do
+    four_tuple_error_func = fn () ->  {:error, :type, :sub_type, :failure} end
+    result = OK.ok_with do
+      a <- safe_div(8, 2)
+      _ <- four_tuple_error_func.()
+      _ <- safe_div(a, 2)
+    end
+    assert result == {:error, {:type, :sub_type, :failure}}
+  end
+
   test "will fail to match if the return value is not a result" do
     assert_raise CaseClauseError, fn() ->
       OK.ok_with do
