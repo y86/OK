@@ -483,7 +483,7 @@ defmodule OK do
     return = bind_match(lines)
     quote do
       case unquote(return) do
-        result = {tag, _} when tag in [:ok, :error] ->
+        result = {tag, _} when tag in [:ok, :error] -> 
           result
       end
     end
@@ -496,8 +496,7 @@ defmodule OK do
     quote do
       unquote(bind_match(normal))
       |> case do
-        {:ok, value} ->
-          {:ok, value}
+        {:ok, value} -> {:ok, value}
         {:error, reason} ->
           case reason do
             unquote(exceptional_clauses)
@@ -551,6 +550,10 @@ defmodule OK do
       case unquote(tmp) = unquote(right) do
         {:ok, unquote(left)} ->
           unquote(bind_match(rest) || tmp)
+
+        :ok = unquote(left) -> 
+          unquote(bind_match(rest) || {:ok, tmp})
+
         result = {:error, _} ->
           result
         return ->

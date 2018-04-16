@@ -121,6 +121,26 @@ defmodule OKTest do
     assert result == {:error, 2.0}
   end
 
+  test "test function returning :ok tag instead of tuple - success" do
+    ok_only = fn :ok -> :ok; _ -> {:error, :failure} end
+    result = OK.ok_with do
+      :ok <- ok_only.(:ok)
+      a <- safe_div(8, 2)
+      _ <- safe_div(a, 2)
+    end
+    assert result == {:ok, 2.0}
+  end
+
+  test "test function returning :ok tag instead of tuple - failure" do
+    ok_only = fn :ok -> :ok; _ -> {:error, :failure} end
+    result = OK.ok_with do
+      :ok <- ok_only.(:error)
+      a <- safe_div(8, 2)
+      _ <- safe_div(a, 2)
+    end
+    assert result == {:error, :failure}
+  end
+
   test "will fail to match if the return value is not a result" do
     assert_raise CaseClauseError, fn() ->
       OK.ok_with do
