@@ -548,7 +548,7 @@ defmodule OK do
     tmp = quote do: tmp
     
     case lhs_string do
-      "_" ->
+      t when t in ["_", ":ok"] ->
         quote line: line do
           case unquote(tmp) = unquote(right) do
             {:ok, unquote(left)} ->
@@ -570,15 +570,12 @@ defmodule OK do
                 rhs: unquote(rhs_string)}
           end
         end
+      # :ok only case not necessary here
       _ ->
         quote line: line do
           case unquote(tmp) = unquote(right) do
             {:ok, unquote(left)} ->
               unquote(bind_match(rest) || tmp)
-
-            unquote(left) when unquote(left) == :ok -> 
-              unquote(bind_match(rest) || {:ok, tmp})
-
             result = {:error, _} ->
               result
             result = {:error, r1, r2} ->
