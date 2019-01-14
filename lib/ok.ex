@@ -546,26 +546,52 @@ defmodule OK do
     lhs_string = Macro.to_string(left)
     rhs_string = Macro.to_string(right)
     tmp = quote do: tmp
-    quote line: line do
-      case unquote(tmp) = unquote(right) do
-        {:ok, unquote(left)} ->
-          unquote(bind_match(rest) || tmp)
+    
+    case lhs_string do
+      "_" ->
+        quote line: line do
+          case unquote(tmp) = unquote(right) do
+            {:ok, unquote(left)} ->
+              unquote(bind_match(rest) || tmp)
 
-        :ok = unquote(left) -> 
-          unquote(bind_match(rest) || {:ok, tmp})
+            :ok ->
+              unquote(bind_match(rest) || {:ok, tmp})
 
-        result = {:error, _} ->
-          result
-        result = {:error, r1, r2} ->
-          {:error, {r1, r2}}
-        result = {:error, r1, r2, r3} ->
-          {:error, {r1, r2, r3}}
-        return ->
-          raise %BindError{
-            return: return,
-            lhs: unquote(lhs_string),
-            rhs: unquote(rhs_string)}
-      end
+            result = {:error, _} ->
+              result
+            result = {:error, r1, r2} ->
+              {:error, {r1, r2}}
+            result = {:error, r1, r2, r3} ->
+              {:error, {r1, r2, r3}}
+            return ->
+              raise %BindError{
+                return: return,
+                lhs: unquote(lhs_string),
+                rhs: unquote(rhs_string)}
+          end
+        end
+      _ ->
+        quote line: line do
+          case unquote(tmp) = unquote(right) do
+            {:ok, unquote(left)} ->
+              unquote(bind_match(rest) || tmp)
+
+            unquote(left) when unquote(left) == :ok -> 
+              unquote(bind_match(rest) || {:ok, tmp})
+
+            result = {:error, _} ->
+              result
+            result = {:error, r1, r2} ->
+              {:error, {r1, r2}}
+            result = {:error, r1, r2, r3} ->
+              {:error, {r1, r2, r3}}
+            return ->
+              raise %BindError{
+                return: return,
+                lhs: unquote(lhs_string),
+                rhs: unquote(rhs_string)}
+          end
+        end
     end
   end
   defp bind_match([normal | rest]) do
