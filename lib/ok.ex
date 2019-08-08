@@ -511,13 +511,13 @@ defmodule OK do
 
   require Logger
 
-  @doc """
-  DEPRECATED: `OK.try` has been replaced with `OK.ok_with`
-  """
-  defmacro try(do: {:__block__, _env, lines}) do
-    Logger.warn("DEPRECATED: `OK.try` has been replaced with `OK.ok_with`")
-    bind_match(lines)
-  end
+  # @doc """
+  # DEPRECATED: `OK.try` has been replaced with `OK.ok_with`
+  # """
+  # defmacro try(do: {:__block__, _env, lines}) do
+  #   Logger.warn("DEPRECATED: `OK.try` has been replaced with `OK.ok_with`")
+  #   bind_match(lines)
+  # end
 
   defmodule BindError do
     defexception [:return, :lhs, :rhs]
